@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
 import { Bot, MessageSquare, Settings, CircleCheckBig } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -28,9 +30,74 @@ const features = [
 
 const CoreFeatures = () => {
   const [activeCard, setActiveCard] = useState(0);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const cardsRef = useRef<Array<HTMLDivElement | null>>([]);
+  const imageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+    if (sectionRef.current) {
+      gsap.fromTo(
+        sectionRef.current,
+        { opacity: 0, y: 60 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 1.2,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 80%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+    }
+    cardsRef.current.forEach((card, i) => {
+      if (card) {
+        gsap.fromTo(
+          card,
+          { opacity: 0, x: -80 },
+          {
+            opacity: 1,
+            x: 0,
+            duration: 1,
+            delay: i * 0.2,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: card,
+              start: "top 90%",
+              toggleActions: "play none none none",
+            },
+          }
+        );
+      }
+    });
+    if (imageRef.current) {
+      gsap.fromTo(
+        imageRef.current,
+        { opacity: 0, x: 80, scale: 0.95 },
+        {
+          opacity: 1,
+          x: 0,
+          scale: 1,
+          duration: 1.2,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: imageRef.current,
+            start: "top 90%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+    }
+    return () => {
+      ScrollTrigger.getAll().forEach((t) => t.kill());
+    };
+  }, []);
 
   return (
-    <section id="features" className="py-20 bg-gradient-to-br from-white via-secondary/30 to-white relative overflow-hidden">
+    <section ref={sectionRef} id="features" className="py-20 bg-gradient-to-br from-white via-secondary/30 to-white relative overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
       <div className="container relative z-10">
         <div className="text-center mb-16">
@@ -52,6 +119,7 @@ const CoreFeatures = () => {
               return (
                 <div
                   key={index}
+                  ref={el => { cardsRef.current[index] = el; }}
                   onClick={() => setActiveCard(index)}
                   className={cn(
                     "p-6 rounded-xl border-2 cursor-pointer transition-all duration-300",
@@ -87,7 +155,7 @@ const CoreFeatures = () => {
             })}
           </div>
 
-          <div className="relative">
+          <div className="relative" ref={imageRef}>
             <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-8 rounded-2xl">
               <Image
                 src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/test-clones/b5ee1cd3-801e-4a8d-9689-89460ae3ba96-everestmanagedai-com/assets/images/c9320fa8-104d-40ff-8fa3-6d5d28c09dd6-1.png?"

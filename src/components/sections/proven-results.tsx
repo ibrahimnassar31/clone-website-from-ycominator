@@ -1,4 +1,7 @@
-import React from 'react';
+'use client'
+import React, { useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { CloudCog, DollarSign, UserPlus } from 'lucide-react';
 
 const metricsData = [
@@ -20,11 +23,79 @@ const metricsData = [
 ];
 
 const ProvenResults = () => {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const metricRefs = useRef<Array<HTMLDivElement | null>>([]);
+
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+    if (sectionRef.current) {
+      gsap.fromTo(
+        sectionRef.current,
+        { opacity: 0, y: 60 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 1.2,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 85%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+    }
+    if (headingRef.current) {
+      gsap.fromTo(
+        headingRef.current,
+        { opacity: 0, scale: 0.8, y: 40 },
+        {
+          opacity: 1,
+          scale: 1,
+          y: 0,
+          duration: 1,
+          ease: "back.out(1.7)",
+          scrollTrigger: {
+            trigger: headingRef.current,
+            start: "top 90%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+    }
+    metricRefs.current.forEach((card, i) => {
+      if (card) {
+        gsap.fromTo(
+          card,
+          { opacity: 0, y: 40, scale: 0.95, rotate: i % 2 === 0 ? -4 : 4 },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            rotate: 0,
+            duration: 0.8,
+            delay: i * 0.18,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: card,
+              start: "top 95%",
+              toggleActions: "play none none none",
+            },
+          }
+        );
+      }
+    });
+    return () => {
+      ScrollTrigger.getAll().forEach((t) => t.kill());
+    };
+  }, []);
+
   return (
-    <section id="results" className="py-20 bg-background">
+    <section ref={sectionRef} id="results" className="py-20 bg-background">
       <div className="container">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl font-bold text-primary md:text-4xl mb-4">
+          <h2 ref={headingRef} className="text-3xl font-bold text-primary md:text-4xl mb-4">
             Proven Results for MSPs
           </h2>
           <p className="text-xl text-slate-600">
@@ -37,6 +108,7 @@ const ProvenResults = () => {
             return (
               <div
                 key={index}
+                ref={el => { metricRefs.current[index] = el; }}
                 className="text-center bg-card p-8 rounded-lg border shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-[1.03]"
               >
                 <div className="text-primary mb-4">

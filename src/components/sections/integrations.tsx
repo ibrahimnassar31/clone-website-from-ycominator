@@ -1,4 +1,8 @@
+'use client'
 import Image from "next/image";
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 const integrationPartners = [
   "NinjaOne",
@@ -10,11 +14,97 @@ const integrationPartners = [
 ];
 
 const IntegrationsSection = () => {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const partnerRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const imageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+    if (sectionRef.current) {
+      gsap.fromTo(
+        sectionRef.current,
+        { opacity: 0, y: 60 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 1.2,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 85%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+    }
+    if (headingRef.current) {
+      gsap.fromTo(
+        headingRef.current,
+        { opacity: 0, scale: 0.8, y: 40 },
+        {
+          opacity: 1,
+          scale: 1,
+          y: 0,
+          duration: 1,
+          ease: "back.out(1.7)",
+          scrollTrigger: {
+            trigger: headingRef.current,
+            start: "top 90%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+    }
+    partnerRefs.current.forEach((card, i) => {
+      if (card) {
+        gsap.fromTo(
+          card,
+          { opacity: 0, y: 40, scale: 0.95 },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.7,
+            delay: i * 0.15,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: card,
+              start: "top 95%",
+              toggleActions: "play none none none",
+            },
+          }
+        );
+      }
+    });
+    if (imageRef.current) {
+      gsap.fromTo(
+        imageRef.current,
+        { opacity: 0, x: 80, scale: 0.9 },
+        {
+          opacity: 1,
+          x: 0,
+          scale: 1,
+          duration: 1.2,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: imageRef.current,
+            start: "top 95%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+    }
+    return () => {
+      ScrollTrigger.getAll().forEach((t) => t.kill());
+    };
+  }, []);
+
   return (
-    <section id="integration" className="py-16 bg-gray-50 relative overflow-hidden">
+    <section ref={sectionRef} id="integration" className="py-16 bg-gray-50 relative overflow-hidden">
       <div className="container relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-primary-navy mb-4">
+          <h2 ref={headingRef} className="text-3xl md:text-4xl font-bold text-primary-navy mb-4">
             Works With Your Existing Tools
           </h2>
           <p className="text-xl text-medium-gray">
@@ -35,9 +125,10 @@ const IntegrationsSection = () => {
                 Compatible with:
               </p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {integrationPartners.map((partner) => (
+                {integrationPartners.map((partner, i) => (
                   <div 
                     key={partner} 
+                    ref={el => { partnerRefs.current[i] = el; }}
                     className="border border-border p-3 rounded-md text-center text-medium-gray font-medium hover:shadow-md transition-all"
                   >
                     {partner}
@@ -46,7 +137,7 @@ const IntegrationsSection = () => {
               </div>
             </div>
             
-            <div className="w-full md:w-1/2">
+            <div className="w-full md:w-1/2" ref={imageRef}>
               <Image
                 src="https://everestmanagedai.com/lovable-uploads/2f277a7a-c6cd-46fb-8ab8-aba05c68c65c.png"
                 alt="Everest Integration Diagram"

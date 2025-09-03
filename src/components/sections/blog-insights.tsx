@@ -1,4 +1,8 @@
+'use client'
 import Image from 'next/image';
+import { useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Link from 'next/link';
 import { CalendarDays, Clock, ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -37,22 +41,108 @@ const otherArticles = [
 ];
 
 export default function BlogInsights() {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const featuredRef = useRef<HTMLAnchorElement>(null);
+  const otherRefs = useRef<Array<HTMLAnchorElement | null>>([]);
+
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+    if (sectionRef.current) {
+      gsap.fromTo(
+        sectionRef.current,
+        { opacity: 0, y: 60 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 1.2,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 85%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+    }
+    if (headingRef.current) {
+      gsap.fromTo(
+        headingRef.current,
+        { opacity: 0, scale: 0.8, y: 40 },
+        {
+          opacity: 1,
+          scale: 1,
+          y: 0,
+          duration: 1,
+          ease: "back.out(1.7)",
+          scrollTrigger: {
+            trigger: headingRef.current,
+            start: "top 90%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+    }
+    if (featuredRef.current) {
+      gsap.fromTo(
+        featuredRef.current,
+        { opacity: 0, x: -60, scale: 0.95 },
+        {
+          opacity: 1,
+          x: 0,
+          scale: 1,
+          duration: 1.2,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: featuredRef.current,
+            start: "top 95%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+    }
+    otherRefs.current.forEach((card, i) => {
+      if (card) {
+        gsap.fromTo(
+          card,
+          { opacity: 0, y: 40, scale: 0.95 },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.7,
+            delay: i * 0.15,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: card,
+              start: "top 95%",
+              toggleActions: "play none none none",
+            },
+          }
+        );
+      }
+    });
+    return () => {
+      ScrollTrigger.getAll().forEach((t) => t.kill());
+    };
+  }, []);
+
   return (
-    <section className="py-20 bg-secondary relative overflow-hidden">
+    <section ref={sectionRef} className="py-20 bg-secondary relative overflow-hidden">
       <div className="absolute inset-x-0 top-0 h-96 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent"></div>
       <div className="container relative z-10">
         <div className="text-center mb-12">
           <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 mb-4 font-semibold px-2.5 py-0.5 text-xs">
             Latest Insights
           </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">MSP Automation Insights</h2>
+          <h2 ref={headingRef} className="text-3xl md:text-4xl font-bold text-primary mb-4">MSP Automation Insights</h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Stay ahead with the latest trends, strategies, and insights in MSP automation and AI
           </p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          <Link href={featuredArticle.href} className="lg:col-span-2 group block rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 bg-card">
+          <Link ref={featuredRef} href={featuredArticle.href} className="lg:col-span-2 group block rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 bg-card">
             <div className="relative">
               <Image
                 src={featuredArticle.image}
@@ -102,7 +192,12 @@ export default function BlogInsights() {
 
           <div className="space-y-8">
             {otherArticles.map((article, index) => (
-              <a href={article.href} key={index} className="group block bg-card rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden">
+              <a
+                ref={el => { otherRefs.current[index] = el; }}
+                href={article.href}
+                key={index}
+                className="group block bg-card rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden"
+              >
                 <div className="p-6">
                   <div className="flex items-start gap-4">
                     {article.image ? (

@@ -1,4 +1,7 @@
-import React from 'react';
+'use client'
+import React, { useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { FileText, FileCheck, ClipboardCheck } from 'lucide-react';
 
 interface FeatureCardProps {
@@ -25,8 +28,9 @@ const featureData: FeatureCardProps[] = [
   },
 ];
 
-const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description }) => (
-  <div className="bg-white p-8 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+type FeatureCardRef = ((el: HTMLDivElement | null) => void) | undefined;
+const FeatureCard: React.FC<FeatureCardProps & { cardRef?: FeatureCardRef }> = ({ icon, title, description, cardRef }) => (
+  <div ref={cardRef} className="bg-white p-8 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
     <div className="mb-5">
       {icon}
     </div>
@@ -36,11 +40,79 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description }) =
 );
 
 const L1TechniciansSection: React.FC = () => {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const cardsRef = useRef<Array<HTMLDivElement | null>>([]);
+
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+    if (sectionRef.current) {
+      gsap.fromTo(
+        sectionRef.current,
+        { opacity: 0, y: 60 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 1.2,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 80%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+    }
+    if (headingRef.current) {
+      gsap.fromTo(
+        headingRef.current,
+        { opacity: 0, scale: 0.8, y: 40 },
+        {
+          opacity: 1,
+          scale: 1,
+          y: 0,
+          duration: 1,
+          ease: "back.out(1.7)",
+          scrollTrigger: {
+            trigger: headingRef.current,
+            start: "top 85%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+    }
+    cardsRef.current.forEach((card, i) => {
+      if (card) {
+        gsap.fromTo(
+          card,
+          { opacity: 0, y: 60, scale: 0.95, rotate: i % 2 === 0 ? -4 : 4 },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            rotate: 0,
+            duration: 1,
+            delay: i * 0.2,
+            ease: "power4.out",
+            scrollTrigger: {
+              trigger: card,
+              start: "top 90%",
+              toggleActions: "play none none none",
+            },
+          }
+        );
+      }
+    });
+    return () => {
+      ScrollTrigger.getAll().forEach((t) => t.kill());
+    };
+  }, []);
+
   return (
-    <section id="benefits" className="py-16 bg-white relative overflow-hidden">
+    <section ref={sectionRef} id="benefits" className="py-16 bg-white relative overflow-hidden">
       <div className="container relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-primary-navy mb-4">
+          <h2 ref={headingRef} className="text-3xl md:text-4xl font-bold text-primary-navy mb-4">
             Empower Your L1 Technicians
           </h2>
           <p className="text-xl text-medium-gray">
@@ -54,6 +126,7 @@ const L1TechniciansSection: React.FC = () => {
               icon={feature.icon}
               title={feature.title}
               description={feature.description}
+              cardRef={(el: HTMLDivElement | null) => { cardsRef.current[index] = el; }}
             />
           ))}
         </div>
