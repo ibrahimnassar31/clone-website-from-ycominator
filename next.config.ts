@@ -6,15 +6,16 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: '**',
+        pathname:'/**'
       },
       {
         protocol: 'http',
         hostname: '**',
+        pathname:'/**'
       },
     ],
   },
-  // outputFileTracingRoot removed to fix error
-  // Removed custom loader for visual-edits/component-tagger-loader.js to fix build error
+  
 };
 
 export default nextConfig;
